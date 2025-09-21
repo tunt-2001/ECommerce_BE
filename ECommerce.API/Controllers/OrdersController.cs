@@ -45,4 +45,16 @@ public class OrdersController : ControllerBase
         var orders = await _mediator.Send(query);
         return Ok(orders);
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOrderById(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var query = new GetOrderByIdQuery { OrderId = id, UserId = userId };
+        var order = await _mediator.Send(query);
+
+        return order != null ? Ok(order) : NotFound();
+    }
 }

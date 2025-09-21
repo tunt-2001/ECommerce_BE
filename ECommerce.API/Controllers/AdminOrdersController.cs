@@ -35,7 +35,6 @@ public class AdminOrdersController : ControllerBase
     }
 }
 
-// DTO nhỏ chỉ để nhận NewStatus từ body của request PUT
 public class UpdateStatusDto
 {
     public string NewStatus { get; set; } = string.Empty;

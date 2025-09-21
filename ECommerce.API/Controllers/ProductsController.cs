@@ -3,6 +3,8 @@ using ECommerce.Infrastructure.Data;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ECommerce.Application.Features.Products;
+using ECommerce.Application.Features.Products.Queries;
 
 namespace ECommerce.API.Controllers;
 

@@ -1,5 +1,8 @@
 ﻿using ECommerce.Application.Interfaces;
 using MediatR;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ECommerce.Application.Features.Orders.Commands.UpdateOrderStatus;
 
@@ -17,11 +20,17 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         var order = await _context.Orders.FindAsync(new object[] { request.OrderId }, cancellationToken);
         if (order == null)
         {
-            return false;
+            return false; // Không tìm thấy đơn hàng
         }
 
-        // Có thể thêm logic kiểm tra xem việc chuyển trạng thái có hợp lệ không
-        // Ví dụ: không thể chuyển từ "Shipped" về "Pending"
+        // (Nâng cao) Thêm logic kiểm tra việc chuyển đổi trạng thái có hợp lệ không
+        // Ví dụ: Không thể chuyển từ "Delivered" về "Pending"
+        var validStatuses = new[] { "PendingPayment", "Processing", "Shipped", "Delivered", "Canceled" };
+        if (!validStatuses.Contains(request.NewStatus, StringComparer.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Invalid order status provided.");
+        }
+
         order.Status = request.NewStatus;
         await _context.SaveChangesAsync(cancellationToken);
 

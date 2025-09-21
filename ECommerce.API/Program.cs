@@ -4,6 +4,7 @@ using ECommerce.Application.Interfaces;
 using ECommerce.Domain.Entities;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Data.Seed;
+using ECommerce.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -97,6 +98,7 @@ try
         options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement { { new Microsoft.OpenApi.Models.OpenApiSecurityScheme { Reference = new Microsoft.OpenApi.Models.OpenApiReference { Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme, Id = "Bearer" } }, new string[] { } } });
     });
     builder.Services.AddAuthorization();
+    builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 
     // =================================================================
     // XÂY DỰNG ỨNG DỤNG
@@ -116,6 +118,7 @@ try
     }
 
     app.UseHttpsRedirection();
+    app.UseStaticFiles();
     app.UseCors(MyAllowSpecificOrigins);
     app.UseAuthentication();
     app.UseAuthorization();
