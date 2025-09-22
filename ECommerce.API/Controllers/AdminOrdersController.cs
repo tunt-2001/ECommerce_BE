@@ -51,6 +51,13 @@ public class AdminOrdersController : ControllerBase
         _logger.LogWarning("Failed to update status for Order ID: {OrderId}. Order not found.", id);
         return NotFound("Order not found.");
     }
+
+    [HttpPost("{id}/cancel")]
+    public async Task<IActionResult> CancelOrder(int id)
+    {
+        var result = await _adminOrderService.CancelOrderAsync(id);
+        return result ? Ok() : BadRequest("Could not cancel order.");
+    }
 }
 
 public class UpdateStatusRequestDto

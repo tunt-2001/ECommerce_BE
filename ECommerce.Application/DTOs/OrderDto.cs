@@ -32,6 +32,7 @@ namespace ECommerce.Application.DTOs
         public string Status { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
         public string ShippingAddress { get; set; } = string.Empty;
+        public string PaymentMethod { get; set; } = string.Empty;
         public List<OrderItemDetailDto> Items { get; set; } = new();
     }
 }

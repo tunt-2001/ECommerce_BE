@@ -84,6 +84,8 @@ try
     builder.Services.AddScoped<IDashboardService, DashboardService>();
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
+    builder.Services.AddScoped<IProfileService, ProfileService>();
+    builder.Services.AddScoped<IEmailService, EmailService>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

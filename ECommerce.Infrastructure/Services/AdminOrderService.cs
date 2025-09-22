@@ -71,4 +71,25 @@ public class AdminOrderService : IAdminOrderService
         order.Status = newStatus;
         return await _context.SaveChangesAsync(default) > 0;
     }
+
+    public async Task<bool> CancelOrderAsync(int orderId)
+    {
+        var order = await _context.Orders.Include(o => o.OrderDetails).FirstOrDefaultAsync(o => o.Id == orderId);
+        if (order == null || order.Status == "Delivered" || order.Status == "Canceled")
+        {
+            return false;
+        }
+
+        foreach (var detail in order.OrderDetails)
+        {
+            var product = await _context.Products.FindAsync(detail.ProductId);
+            if (product != null)
+            {
+                product.Stock += detail.Quantity;
+            }
+        }
+
+        order.Status = "Canceled";
+        return await _context.SaveChangesAsync(default) > 0;
+    }
 }

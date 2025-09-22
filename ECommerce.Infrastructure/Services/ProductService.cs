@@ -51,6 +51,81 @@ public class ProductService : IProductService
             .ToListAsync();
     }
 
+    public async Task<PagedResult<ProductDto>> GetAllAsync(ProductFilterParameters parameters)
+    {
+        var query = _context.Products.Include(p => p.Category).AsQueryable();
+
+        // Lọc
+        if (parameters.CategoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == parameters.CategoryId.Value);
+        }
+        if (!string.IsNullOrWhiteSpace(parameters.SearchTerm))
+        {
+            query = query.Where(p => p.Name.Contains(parameters.SearchTerm));
+        }
+
+        // Sắp xếp
+        switch (parameters.SortBy?.ToLower())
+        {
+            case "price_asc":
+                query = query.OrderBy(p => p.Price);
+                break;
+            case "price_desc":
+                query = query.OrderByDescending(p => p.Price);
+                break;
+            default:
+                query = query.OrderBy(p => p.Name);
+                break;
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var items = await query
+            .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+            .Take(parameters.PageSize)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                Stock = p.Stock,
+                ImageUrl = p.ImageUrl,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category.Name
+            })
+            .ToListAsync();
+
+        // ĐẢM BẢO BẠN TRẢ VỀ ĐỐI TƯỢNG PagedResult
+        return new PagedResult<ProductDto>
+        {
+            Items = items,
+            PageNumber = parameters.PageNumber,
+            PageSize = parameters.PageSize,
+            TotalCount = totalCount
+        };
+    }
+
+    public async Task<ProductDto?> GetByIdAsync(int id)
+    {
+        return await _context.Products
+           .Where(p => p.Id == id)
+           .Include(p => p.Category)
+           .Select(p => new ProductDto
+           {
+               Id = p.Id,
+               Name = p.Name,
+               Description = p.Description,
+               Price = p.Price,
+               Stock = p.Stock,
+               ImageUrl = p.ImageUrl,
+               CategoryId = p.CategoryId,
+               CategoryName = p.Category.Name
+           })
+           .FirstOrDefaultAsync();
+    }
+
     public async Task<bool> UpdateAsync(int id, ProductDto dto)
     {
         var product = await _context.Products.FindAsync(id);

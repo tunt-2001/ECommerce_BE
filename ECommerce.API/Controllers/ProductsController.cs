@@ -1,5 +1,9 @@
-﻿using ECommerce.Application.Services;
+﻿using ECommerce.Application;
+using ECommerce.Application.DTOs;
+using ECommerce.Application.Services;
+using Microsoft.AspNetCore.Authorization; // Thêm using này
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace ECommerce.API.Controllers;
 
@@ -15,9 +19,18 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProducts()
+    [AllowAnonymous] 
+    public async Task<IActionResult> GetProducts([FromQuery] ProductFilterParameters parameters)
     {
-        return Ok(await _productService.GetAllAsync());
+        var result = await _productService.GetAllAsync(parameters);
+        return Ok(result);
     }
 
+    [HttpGet("{id}")]
+    [AllowAnonymous]    
+    public async Task<IActionResult> GetProductById(int id)
+    {
+        var product = await _productService.GetByIdAsync(id);
+        return product != null ? Ok(product) : NotFound();
+    }
 }
