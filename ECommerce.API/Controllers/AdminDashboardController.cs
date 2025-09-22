@@ -1,38 +1,45 @@
-﻿using ECommerce.Application.Features.Dashboard;
-using MediatR;
+﻿using ECommerce.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
+namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/admin/dashboard")]
 [Authorize(Roles = "Admin")]
 public class AdminDashboardController : ControllerBase
 {
-    private readonly IMediator _mediator;
-    public AdminDashboardController(IMediator mediator) => _mediator = mediator;
+    private readonly IDashboardService _dashboardService;
+
+    public AdminDashboardController(IDashboardService dashboardService)
+    {
+        _dashboardService = dashboardService;
+    }
 
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats([FromQuery] string period = "today")
     {
-        var (startDate, endDate) = GetDateRange(period);
-        var query = new GetDashboardStatsQuery { StartDate = startDate, EndDate = endDate };
-        return Ok(await _mediator.Send(query));
+        var (startDate, endDate) = GetDateRangeFromPeriod(period);
+        var stats = await _dashboardService.GetStatsAsync(startDate, endDate);
+        return Ok(stats);
     }
 
     [HttpGet("revenue-chart")]
     public async Task<IActionResult> GetRevenueChartData([FromQuery] string period = "last7days")
     {
-        var (startDate, endDate) = GetDateRange(period);
-        var query = new GetRevenueChartDataQuery { StartDate = startDate, EndDate = endDate };
-        return Ok(await _mediator.Send(query));
+        var (startDate, endDate) = GetDateRangeFromPeriod(period);
+        var chartData = await _dashboardService.GetRevenueChartDataAsync(startDate, endDate);
+        return Ok(chartData);
     }
 
-    // Hàm helper để tính toán khoảng thời gian
-    private (DateTime, DateTime) GetDateRange(string period)
+    /// <summary>
+    /// Helper function to calculate date ranges based on a string period.
+    /// </summary>
+    private (DateTime, DateTime) GetDateRangeFromPeriod(string period)
     {
         DateTime today = DateTime.Today;
         DateTime startDate = today;
-        DateTime endDate = today.AddDays(1).AddTicks(-1); // Cuối ngày
+        DateTime endDate = today.AddDays(1).AddTicks(-1); // End of today
 
         switch (period.ToLower())
         {
@@ -45,7 +52,10 @@ public class AdminDashboardController : ControllerBase
             case "last7days":
                 startDate = today.AddDays(-6);
                 break;
+            case "today":
+            default:
+                break;
         }
-        return (startDate, endDate);
+        return (startDate.Date, endDate);
     }
 }

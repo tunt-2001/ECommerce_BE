@@ -1,8 +1,8 @@
-﻿using ECommerce.Application.Features.Orders.Commands.UpdateOrderStatus;
-using ECommerce.Application.Features.Orders.Queries.GetOrdersForAdmin;
-using MediatR;
+﻿using ECommerce.Application.DTOs; // Nơi chứa DTO cho Admin
+using ECommerce.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace ECommerce.API.Controllers;
 
@@ -11,31 +11,49 @@ namespace ECommerce.API.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminOrdersController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly IAdminOrderService _adminOrderService;
+    private readonly ILogger<AdminOrdersController> _logger;
 
-    public AdminOrdersController(IMediator mediator)
+    public AdminOrdersController(IAdminOrderService adminOrderService, ILogger<AdminOrdersController> logger)
     {
-        _mediator = mediator;
+        _adminOrderService = adminOrderService;
+        _logger = logger;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetOrders()
     {
-        var query = new GetOrdersForAdminQuery();
-        var orders = await _mediator.Send(query);
+        _logger.LogInformation("Admin fetching all orders.");
+        var orders = await _adminOrderService.GetAllAsync();
         return Ok(orders);
     }
 
-    [HttpPut("{id}/status")]
-    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusDto dto)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOrderById(int id)
     {
-        var command = new UpdateOrderStatusCommand { OrderId = id, NewStatus = dto.NewStatus };
-        var result = await _mediator.Send(command);
-        return result ? NoContent() : NotFound("Order not found.");
+        _logger.LogInformation("Admin fetching details for Order ID: {OrderId}", id);
+        var order = await _adminOrderService.GetByIdAsync(id);
+        return order != null ? Ok(order) : NotFound();
+    }
+
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateStatusRequestDto request)
+    {
+        _logger.LogInformation("Admin attempting to update status for Order ID: {OrderId} to {NewStatus}", id, request.NewStatus);
+        var result = await _adminOrderService.UpdateStatusAsync(id, request.NewStatus);
+
+        if (result)
+        {
+            _logger.LogInformation("Successfully updated status for Order ID: {OrderId}", id);
+            return NoContent();
+        }
+
+        _logger.LogWarning("Failed to update status for Order ID: {OrderId}. Order not found.", id);
+        return NotFound("Order not found.");
     }
 }
 
-public class UpdateStatusDto
+public class UpdateStatusRequestDto
 {
     public string NewStatus { get; set; } = string.Empty;
 }

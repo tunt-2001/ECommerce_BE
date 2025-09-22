@@ -9,8 +9,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Serilog; // 1. THÊM USING CHO SERILOG
+using Serilog; 
 using System.Text;
+using ECommerce.Application.Services;
+using ECommerce.Infrastructure.Services;
 
 
 Log.Logger = new LoggerConfiguration()
@@ -18,7 +20,6 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Information)
     .Enrich.FromLogContext()
     .WriteTo.Console()
-    // === KIỂM TRA KỸ ĐOẠN NÀY ===
     .WriteTo.File(
         "Logs/ecommerce-log-.txt", // Đường dẫn ghi file
         rollingInterval: RollingInterval.Day, // Tạo file mới mỗi ngày
@@ -32,14 +33,8 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    // --- BẢO CHO ASP.NET CORE SỬ DỤNG SERILOG ---
-    builder.Host.UseSerilog(); // <-- THAY THẾ LOGGER MẶC ĐỊNH
+    builder.Host.UseSerilog(); 
 
-    // =================================================================
-    // 1. CẤU HÌNH CÁC DỊCH VỤ (DEPENDENCY INJECTION)
-    // =================================================================
-
-    // --- CẤU HÌNH CORS ---
     var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
     builder.Services.AddCors(options =>
     {
@@ -83,26 +78,23 @@ try
         };
     });
 
-    // --- ĐĂNG KÝ MEDIATR ---
-    builder.Services.AddMediatR(cfg =>
-        cfg.RegisterServicesFromAssembly(typeof(ECommerce.Application.AssemblyReference).Assembly)
-    );
+    builder.Services.AddScoped<ICategoryService, CategoryService>();
+    builder.Services.AddScoped<IProductService, ProductService>();
+    builder.Services.AddScoped<IOrderService, OrderService>();
+    builder.Services.AddScoped<IDashboardService, DashboardService>();
+    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
 
-    // --- CÁC DỊCH VỤ KHÁC ---
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
-        // ... (code swagger của bạn giữ nguyên)
         options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme { Name = "Authorization", In = Microsoft.OpenApi.Models.ParameterLocation.Header, Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey, Scheme = "Bearer", BearerFormat = "JWT", Description = "Nhập JWT Token theo định dạng sau: Bearer [space] {token}" });
         options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement { { new Microsoft.OpenApi.Models.OpenApiSecurityScheme { Reference = new Microsoft.OpenApi.Models.OpenApiReference { Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme, Id = "Bearer" } }, new string[] { } } });
     });
     builder.Services.AddAuthorization();
     builder.Services.AddScoped<IQRCodeService, QRCodeService>();
 
-    // =================================================================
-    // XÂY DỰNG ỨNG DỤNG
-    // =================================================================
     var app = builder.Build();
 
     // --- SEED DATABASE ---

@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting; // Cần inject IWebHostEnvironment
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerce.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")] // Chỉ Admin mới được upload
+[Authorize(Roles = "Admin")]
 public class UploadsController : ControllerBase
 {
     private readonly IWebHostEnvironment _webHostEnvironment;
@@ -55,10 +55,6 @@ public class UploadsController : ControllerBase
             await file.CopyToAsync(stream);
         }
 
-        // Trả về URL công khai của file ảnh
-        // Request.Scheme: http hoặc https
-        // Request.Host: localhost:44399
-        // URL sẽ có dạng: https://localhost:44399/images/products/xxxxxxxx-xxxx.jpg
         var imageUrl = $"{Request.Scheme}://{Request.Host}/images/products/{uniqueFileName}";
 
         return Ok(new { imageUrl });

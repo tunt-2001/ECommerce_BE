@@ -1,10 +1,5 @@
-﻿using ECommerce.Application;
-using ECommerce.Infrastructure.Data;
-using MediatR;
+﻿using ECommerce.Application.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ECommerce.Application.Features.Products;
-using ECommerce.Application.Features.Products.Queries;
 
 namespace ECommerce.API.Controllers;
 
@@ -12,17 +7,17 @@ namespace ECommerce.API.Controllers;
 [Route("api/products")]
 public class ProductsController : ControllerBase
 {
-    private readonly IMediator _mediator;
-    public ProductsController(IMediator mediator) => _mediator = mediator;
+    private readonly IProductService _productService;
 
-    // GET /api/products - Dùng lại Query của Admin
+    public ProductsController(IProductService productService)
+    {
+        _productService = productService;
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetProducts()
     {
-        var query = new GetAllProductsQuery();
-        return Ok(await _mediator.Send(query));
+        return Ok(await _productService.GetAllAsync());
     }
 
-    // GET /api/products/{id} - Endpoint này đã có ở trên
-    // Bạn nên tạo Query Handler riêng cho nó và chuyển nó vào đây.
 }

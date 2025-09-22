@@ -1,6 +1,8 @@
-﻿namespace ECommerce.Domain.Entities;
+﻿using ECommerce.Domain.Common;
 
-public class Category
+namespace ECommerce.Domain.Entities;
+
+public class Category 
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

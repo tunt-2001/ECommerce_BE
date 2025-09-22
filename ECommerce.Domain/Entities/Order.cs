@@ -1,6 +1,8 @@
-﻿namespace ECommerce.Domain.Entities;
+﻿using ECommerce.Domain.Common;
 
-public class Order
+namespace ECommerce.Domain.Entities;
+
+public class Order 
 {
     public int Id { get; set; }
     public string UserId { get; set; } = string.Empty;

@@ -1,6 +1,8 @@
-﻿namespace ECommerce.Domain.Entities;
+﻿using ECommerce.Domain.Common;
 
-public class OrderDetail
+namespace ECommerce.Domain.Entities;
+
+public class OrderDetail 
 {
     public int Id { get; set; }
     public int OrderId { get; set; }
@@ -10,5 +12,5 @@ public class OrderDetail
     public Product Product { get; set; } = null!;
 
     public int Quantity { get; set; }
-    public decimal Price { get; set; } // Giá tại thời điểm mua
+    public decimal Price { get; set; } 
 }

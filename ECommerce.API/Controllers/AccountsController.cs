@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 public class AccountsController : ControllerBase // 3. Kế thừa từ ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly IConfiguration _configuration; // 4. Dùng IConfiguration để đọc JWT Key
+    private readonly IConfiguration _configuration; 
     private readonly ILogger<AccountsController> _logger;
 
     public AccountsController(UserManager<ApplicationUser> userManager, IConfiguration configuration, ILogger<AccountsController> logger)

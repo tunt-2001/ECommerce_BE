@@ -1,59 +1,47 @@
 ﻿using ECommerce.Application;
-using ECommerce.Application.Features.Products.Commands.CreateProduct;
-using ECommerce.Application.Features.Products.Queries;
-using MediatR;
+using ECommerce.Application.DTOs;
+using ECommerce.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ECommerce.API.Controllers
+namespace ECommerce.API.Controllers;
+
+[ApiController]
+[Route("api/admin/products")]
+[Authorize(Roles = "Admin")]
+public class AdminProductsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/admin/products")]
-    [Authorize(Roles = "Admin")]
-    public class AdminProductsController : ControllerBase
+    private readonly IProductService _productService;
+
+    public AdminProductsController(IProductService productService)
     {
-        private readonly IMediator _mediator;
-        public AdminProductsController(IMediator mediator) => _mediator = mediator;
+        _productService = productService;
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> GetProducts()
-        {
-            var query = new GetAllProductsQuery();
-            return Ok(await _mediator.Send(query));
-        }
+    [HttpGet]
+    public async Task<IActionResult> GetAllProducts()
+    {
+        return Ok(await _productService.GetAllAsync());
+    }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateProduct([FromBody] CreateProductCommand command)
-        {
-            var createdProduct = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetProductById), new { id = createdProduct.Id }, createdProduct);
-        }
+    [HttpPost]
+    public async Task<IActionResult> CreateProduct([FromBody] ProductDto productDto)
+    {
+        var product = await _productService.CreateAsync(productDto);
+        return Ok(product);
+    }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductCommand command)
-        {
-            if (id != command.Id) return BadRequest();
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductDto productDto)
+    {
+        var result = await _productService.UpdateAsync(id, productDto);
+        return result ? NoContent() : NotFound();
+    }
 
-            var result = await _mediator.Send(command);
-            return result ? NoContent() : NotFound();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
-        {
-            var command = new DeleteProductCommand { Id = id };
-            var result = await _mediator.Send(command);
-            return result ? NoContent() : NotFound();
-        }
-
-        [HttpGet("/api/products/{id}")] 
-        [AllowAnonymous]
-        public async Task<IActionResult> GetProductById(int id)
-        {
-            // Tạm thời để logic ở đây, sau sẽ chuyển sang Query Handler
-            // var query = new GetProductByIdQuery { Id = id };
-            // return Ok(await _mediator.Send(query));
-            return Ok(); // Trả về Ok() để CreatedAtAction hoạt động
-        }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteProduct(int id)
+    {
+        var result = await _productService.DeleteAsync(id);
+        return result ? NoContent() : NotFound();
     }
 }

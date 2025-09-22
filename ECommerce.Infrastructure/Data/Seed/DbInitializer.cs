@@ -1,10 +1,7 @@
-﻿// File: ECommerce.Infrastructure/Data/Seed/DbInitializer.cs
-using ECommerce.Domain.Entities;
+﻿using ECommerce.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Data.Seed;
 
@@ -31,8 +28,8 @@ public static class DbInitializer
             // --- TẠO TÀI KHOẢN ADMIN MẶC ĐỊNH (ĐÃ SỬA LẠI ĐỂ DÙNG USERNAME RIÊNG) ---
 
             // 1. Định nghĩa các thông tin của admin
-            var adminUserName = "admin"; // Đây sẽ là tên đăng nhập
-            var adminEmail = "trongtu28032001@gmail.com"; // Đây là email liên lạc
+            var adminUserName = "admin"; 
+            var adminEmail = "trongtu28032001@gmail.com";
             var adminPassword = "Admin@123";
 
             // 2. Kiểm tra xem UserName đã tồn tại chưa
