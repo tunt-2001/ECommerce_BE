@@ -1,18 +1,22 @@
 ﻿// --- CÁC USING STATEMENTS CẦN THIẾT ---
+using ECommerce.API.Hubs;
+using ECommerce.API.Services;
 using ECommerce.Application;
 using ECommerce.Application.Interfaces;
+using ECommerce.Application.Services;
 using ECommerce.Domain.Entities;
 using ECommerce.Infrastructure.Data;
 using ECommerce.Infrastructure.Data.Seed;
 using ECommerce.Infrastructure.Services;
+using Hangfire;
+using Hangfire.Dashboard.BasicAuthorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog; 
+using System.Security.Cryptography;
 using System.Text;
-using ECommerce.Application.Services;
-using ECommerce.Infrastructure.Services;
 
 
 Log.Logger = new LoggerConfiguration()
@@ -43,7 +47,8 @@ try
                           {
                               policy.WithOrigins("http://localhost:3000")
                                     .AllowAnyHeader()
-                                    .AllowAnyMethod();
+                                    .AllowAnyMethod()
+                                    .AllowCredentials();
                           });
     });
 
@@ -78,6 +83,15 @@ try
         };
     });
 
+    // --- CẤU HÌNH DỊCH VỤ HANGFIRE ---
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
+
+    builder.Services.AddHangfireServer();
+
     builder.Services.AddScoped<ICategoryService, CategoryService>();
     builder.Services.AddScoped<IProductService, ProductService>();
     builder.Services.AddScoped<IOrderService, OrderService>();
@@ -86,6 +100,7 @@ try
     builder.Services.AddScoped<IAdminOrderService, AdminOrderService>();
     builder.Services.AddScoped<IProfileService, ProfileService>();
     builder.Services.AddScoped<IEmailService, EmailService>();
+    builder.Services.AddScoped<IAdminMarketingService, AdminMarketingService>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -96,6 +111,8 @@ try
     });
     builder.Services.AddAuthorization();
     builder.Services.AddScoped<IQRCodeService, QRCodeService>();
+    builder.Services.AddSignalR();
+    builder.Services.AddScoped<INotificationService, NotificationService>();
 
     var app = builder.Build();
 
@@ -117,6 +134,27 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = new[]
+        {
+        new BasicAuthAuthorizationFilter(new BasicAuthAuthorizationFilterOptions
+        {
+            RequireSsl = false,
+            Users = new []
+            {
+                new BasicAuthAuthorizationUser
+                {
+                    Login = "admin",
+                    Password = SHA1.HashData(Encoding.UTF8.GetBytes("admin"))
+                }
+            }
+        })
+    }
+    });
+
+    app.MapHub<NotificationHub>("/notificationHub"); 
 
     app.Run();
 }

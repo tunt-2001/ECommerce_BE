@@ -39,7 +39,8 @@ public class AccountsController : ControllerBase // 3. Kế thừa từ Controll
             Email = registerDto.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
             UserName = registerDto.Email,
-            FullName = registerDto.FullName
+            FullName = registerDto.FullName,
+            EmailConfirmed = true
         };
 
         var result = await _userManager.CreateAsync(user, registerDto.Password);

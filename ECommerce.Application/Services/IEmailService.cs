@@ -9,5 +9,6 @@ namespace ECommerce.Application.Services
     public interface IEmailService
     {
         Task SendEmailAsync(string toEmail, string subject, string body);
+        Task SendPromotionalEmailAsync(List<string> toEmails, string subject, string body, string? imageUrl);
     }
 }

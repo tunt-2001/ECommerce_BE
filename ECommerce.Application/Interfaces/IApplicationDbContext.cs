@@ -11,7 +11,6 @@ public interface IApplicationDbContext
     DbSet<Category> Categories { get; }
     DbSet<Order> Orders { get; }
     DbSet<OrderDetail> OrderDetails { get; }
-
-    // Thêm phương thức SaveChangesAsync vào interface
+    DbSet<Newsletter> Newsletters { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
