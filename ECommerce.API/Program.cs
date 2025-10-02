@@ -101,6 +101,8 @@ try
     builder.Services.AddScoped<IProfileService, ProfileService>();
     builder.Services.AddScoped<IEmailService, EmailService>();
     builder.Services.AddScoped<IAdminMarketingService, AdminMarketingService>();
+    builder.Services.AddScoped<IWishlistService, WishlistService>();
+    builder.Services.AddScoped<INotificationPersistenceService, NotificationPersistenceService>();
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

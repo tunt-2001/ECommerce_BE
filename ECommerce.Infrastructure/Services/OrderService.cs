@@ -20,6 +20,7 @@ public class OrderService : IOrderService
     private readonly IEmailService _emailService;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly INotificationService _notificationService; // Sử dụng interface trừu tượng
+    private readonly INotificationPersistenceService _persistenceService;
     private readonly ILogger<OrderService> _logger;
 
     public OrderService(
@@ -28,6 +29,7 @@ public class OrderService : IOrderService
         IEmailService emailService,
         UserManager<ApplicationUser> userManager,
         INotificationService notificationService, // Inject interface
+        INotificationPersistenceService persistenceService,
         ILogger<OrderService> logger)
     {
         _context = context;
@@ -35,6 +37,7 @@ public class OrderService : IOrderService
         _emailService = emailService;
         _userManager = userManager;
         _notificationService = notificationService;
+        _persistenceService = persistenceService;
         _logger = logger;
     }
 
@@ -95,10 +98,16 @@ public class OrderService : IOrderService
             var user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
-                // 1. Gửi thông báo Real-time đến Admin qua interface
+
                 var notificationMessage = $"New order #{order.Id} from {user.FullName}. Total: ${order.TotalAmount:F2}";
-                await _notificationService.SendNewOrderNotificationAsync(notificationMessage);
-                _logger.LogInformation("Notification task for new Order {OrderId} was sent via INotificationService.", order.Id);
+
+                // 1. LƯU THÔNG BÁO VÀO DATABASE TRƯỚC
+                var newNotifications = await _persistenceService.CreateNotificationsForAdminsAsync(notificationMessage, "Order", order.Id);
+                _logger.LogInformation("Notification record for Order {OrderId} saved to database.", order.Id);
+
+                // 2. SAU ĐÓ MỚI GỬI TÍN HIỆU REAL-TIME KÈM THEO DỮ LIỆU MỚI
+                // Gửi bản ghi đầu tiên (vì message của các bản ghi cho các admin là giống nhau)
+                await _notificationService.SendNewOrderNotificationAsync(notificationMessage, newNotifications.FirstOrDefault());
 
                 // 2. Gửi Email xác nhận cho khách hàng
                 if (user.Email != null)

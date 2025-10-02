@@ -12,5 +12,7 @@ public interface IApplicationDbContext
     DbSet<Order> Orders { get; }
     DbSet<OrderDetail> OrderDetails { get; }
     DbSet<Newsletter> Newsletters { get; }
+    DbSet<WishlistItem> WishlistItems { get; }
+    DbSet<Notification> Notifications { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

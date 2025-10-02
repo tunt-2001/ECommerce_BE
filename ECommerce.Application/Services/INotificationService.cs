@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using ECommerce.Domain.Entities;
+using System.Threading.Tasks;
 
 namespace ECommerce.Application.Interfaces;
 
 public interface INotificationService
 {
-    Task SendNewOrderNotificationAsync(string message);
+    Task SendNewOrderNotificationAsync(string message, Notification newNotification);
 }
